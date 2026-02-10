@@ -175,7 +175,7 @@ const HTML_CONTENT = `
         <div class="lg:col-span-1 space-y-6">
             <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 sticky top-6">
                 <h1 class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 mb-4 flex items-center gap-2">
-                    <span>🚀</span> Result Portal
+                    <span></span> Result Extraction of Presi Uni
                 </h1>
                 
                 <div class="space-y-3">
@@ -209,7 +209,7 @@ const HTML_CONTENT = `
 
                 <div class="mt-4 pt-4 border-t border-gray-100">
                     <div class="flex justify-between items-center mb-2">
-                        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Live Logs</div>
+                        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Live Logs/Credits to Meeza ifykyk</div>
                         <div class="text-xs text-blue-600 cursor-pointer" onclick="document.getElementById('logs').innerHTML=''">Clear</div>
                     </div>
                     <div id="logs" class="h-24 overflow-y-auto bg-gray-900 text-green-400 text-xs font-mono p-3 rounded-lg shadow-inner">
@@ -478,3 +478,4 @@ server.listen(PORT, () => {
     console.log(`\n🚀 DASHBOARD READY!`);
     console.log(`👉 http://localhost:${PORT}`);
 });
+
