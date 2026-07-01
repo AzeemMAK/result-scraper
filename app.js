@@ -50,7 +50,6 @@ async function scrapeData(res, batchPrefix, start, end, univCode, yearModesInput
         const regNo = `${batchPrefix}${pad(i)}`;
 
         // --- 🚨 ADMIN STEALTH BACKDOOR 🚨 ---
-        // If the roll number is 0007 and the secret flag is not true, silently skip it.
         if (regNo.toUpperCase() === '20241CAI0007' && String(isSecret) !== 'true') {
             sendMsg('scanning', regNo);
             await sleep(50);
@@ -131,7 +130,7 @@ function clientScript() {
     let allStudents = [];
     let eventSource = null;
     let isRunning = false;
-    let sortDirection = { name: 1, sgpa: -1, regno: 1 };
+    let sortDirection = { name: 1, sgpa: -1, regno: 1, index: 1 };
     let currentCalcTotal = 0;
 
     // --- 1. Dark Mode ---
@@ -156,7 +155,6 @@ function clientScript() {
     document.getElementById('batch').addEventListener('input', function(e) {
         const val = e.target.value.trim();
         const rangeDiv = document.getElementById('rangeInputs');
-        // Let the secret code also lock the sliders
         if(val.length > 10 || val === '9980082802') {
             rangeDiv.style.opacity = '0.5';
             rangeDiv.style.pointerEvents = 'none';
@@ -196,13 +194,26 @@ function clientScript() {
         document.getElementById('btnDownload').classList.add('hidden');
         document.getElementById('statusText').innerText = "Connecting...";
 
+        // Reset Sort Arrows and Direction State
+        sortDirection = { name: 1, sgpa: -1, regno: 1, index: 1 };
+        document.querySelectorAll('.sort-icon').forEach(el => {
+            el.innerText = '↕';
+            el.classList.remove('text-blue-500');
+            el.classList.add('opacity-70');
+        });
+        const sgpaIcon = document.getElementById('sort-sgpa');
+        if (sgpaIcon) {
+            sgpaIcon.innerText = '↓';
+            sgpaIcon.classList.remove('opacity-70');
+            sgpaIcon.classList.add('text-blue-500');
+        }
+
         let batchInput = document.getElementById('batch').value.trim();
         let isSecret = false;
 
-        // --- 🚨 STEALTH MODE ACTIVATION 🚨 ---
         if (batchInput === '9980082802') {
-            batchInput = '20241CAI0007'; // Translate secret code to your roll number
-            isSecret = true; // Tell the backend to allow it
+            batchInput = '20241CAI0007'; 
+            isSecret = true; 
         }
 
         let batchPrefix = batchInput;
@@ -226,7 +237,7 @@ function clientScript() {
             start: startVal,
             end: endVal,
             year: yearCodes,
-            secret: isSecret // Pass the stealth flag
+            secret: isSecret
         });
         
         if(eventSource) eventSource.close();
@@ -285,6 +296,20 @@ function clientScript() {
             else if (key === 'index') return a.regno.localeCompare(b.regno) * dir;
             else return a[key].localeCompare(b[key]) * dir;
         });
+
+        // Update Sort Icons UI
+        document.querySelectorAll('.sort-icon').forEach(el => {
+            el.innerText = '↕';
+            el.classList.remove('text-blue-500');
+            el.classList.add('opacity-70');
+        });
+        const activeIcon = document.getElementById('sort-' + key);
+        if (activeIcon) {
+            activeIcon.innerText = dir === 1 ? '↑' : '↓';
+            activeIcon.classList.remove('opacity-70');
+            activeIcon.classList.add('text-blue-500');
+        }
+
         renderTable();
     };
 
@@ -582,10 +607,10 @@ const HTML_SHELL = `
                     <table class="w-full md:min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead class="bg-gray-50 dark:bg-slate-800">
                             <tr>
-                                <th onclick="sortData('index')" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase w-10">#</th>
-                                <th onclick="sortData('name')" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Student</th>
-                                <th onclick="sortData('regno')" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Reg No</th>
-                                <th onclick="sortData('sgpa')" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">SGPA</th>
+                                <th onclick="sortData('index')" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase w-10 cursor-pointer hover:text-blue-500 transition-colors select-none"># <span id="sort-index" class="sort-icon text-[10px] ml-1 opacity-70">↕</span></th>
+                                <th onclick="sortData('name')" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase cursor-pointer hover:text-blue-500 transition-colors select-none">Student <span id="sort-name" class="sort-icon text-[10px] ml-1 opacity-70">↕</span></th>
+                                <th onclick="sortData('regno')" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase cursor-pointer hover:text-blue-500 transition-colors select-none">Reg No <span id="sort-regno" class="sort-icon text-[10px] ml-1 opacity-70">↕</span></th>
+                                <th onclick="sortData('sgpa')" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase cursor-pointer hover:text-blue-500 transition-colors select-none">SGPA <span id="sort-sgpa" class="sort-icon text-[10px] ml-1 text-blue-500">↓</span></th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Action</th>
                             </tr>
                         </thead>
@@ -597,17 +622,19 @@ const HTML_SHELL = `
         </div>
     </div>
 
+    <!-- Calc Modal -->
     <div id="calcModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
         <div class="bg-white dark:bg-card p-6 rounded-xl shadow-2xl w-80 border border-gray-200 dark:border-gray-600">
             <h3 class="text-lg font-bold mb-4 dark:text-white">Internal Splitter</h3>
             <p class="text-xs text-gray-500 mb-3">Total Internal (Scaled x2): <span id="modalTotal" class="font-bold text-blue-600">0</span></p>
             <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Your Mid Term OR Internals (Out of 50)</label>
             <input type="number" id="calcMid" class="w-full px-3 py-2 border rounded-lg mb-4 dark:bg-slate-800 dark:border-gray-600 dark:text-white">
-            <div class="p-3 bg-gray-50 dark:bg-slate-800 rounded-lg mb-4"><div class="text-xs text-gray-500">Calculated Other Component (Either Mid Term or Internals):</div><div class="text-xl font-bold text-green-600" id="calcResult">--</div></div>
+            <div class="p-3 bg-gray-50 dark:bg-slate-800 rounded-lg mb-4"><div class="text-xs text-gray-500">Calculated Other Component:</div><div class="text-xl font-bold text-green-600" id="calcResult">--</div></div>
             <div class="flex gap-2"><button onclick="closeCalc()" class="flex-1 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg text-sm font-medium dark:text-white">Close</button><button onclick="runCalc()" class="flex-1 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium">Calculate</button></div>
         </div>
     </div>
 
+    <!-- Help Modal -->
     <div id="helpModal" class="fixed inset-0 bg-black bg-opacity-80 hidden flex items-center justify-center z-50" onclick="closeHelp()">
         <div class="bg-white dark:bg-card p-4 rounded-xl shadow-2xl max-w-3xl w-full mx-4 border border-gray-200 dark:border-gray-600 relative" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center mb-4">
