@@ -169,7 +169,7 @@ function clientScript() {
         const div = document.createElement('div');
         div.className = "flex gap-2 mt-2";
         div.innerHTML = `
-            <input type="text" class="year-input w-full px-3 py-2 border rounded-lg text-sm bg-gray-50 dark:bg-slate-800 dark:border-gray-600 dark:text-gray-300" placeholder="e.g. C-2024-3">
+            <input type="text" class="year-input w-full px-3 py-2 border rounded-lg text-sm bg-gray-50 dark:bg-slate-800 dark:border-gray-600 dark:text-gray-300" placeholder="e.g. D-2026-1">
             <button onclick="this.parentElement.remove()" class="px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg border border-red-200 dark:border-red-900 dark:hover:bg-red-900/20">✕</button>
         `;
         container.appendChild(div);
@@ -556,7 +556,7 @@ const HTML_SHELL = `
 
     <div class="max-w-[1400px] mx-auto mb-6 flex justify-between items-center">
         <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center gap-2">
-            <span>⚡</span> Result Extraction of Presi Uni :) <span class="text-xs bg-blue-100 text-blue-700 px-2 rounded-full hidden md:inline-block">By Meeza ifykyk</span>
+            <span></span> Result Extraction of Presi Uni :) <span class="text-xs bg-blue-100 text-blue-700 px-2 rounded-full hidden md:inline-block">By Meeza ifykyk</span>
         </h1>
         <button onclick="toggleTheme()" class="p-2 rounded-full bg-white dark:bg-card shadow-sm border border-gray-200 dark:border-gray-700">
             <span id="themeIcon">🌙</span>
@@ -617,7 +617,7 @@ const HTML_SHELL = `
                         <tbody class="bg-white dark:bg-card divide-y divide-gray-200 dark:divide-gray-700 block md:table-row-group" id="tableBody"></tbody>
                     </table>
                 </div>
-                <div id="emptyState" class="flex flex-col items-center justify-center flex-grow text-gray-400 py-12"><div class="text-4xl mb-2">📡</div><p>Ready to extract</p></div>
+                <div id="emptyState" class="flex flex-col items-center justify-center flex-grow text-gray-400 py-12"><div class="text-4xl mb-2"></div><p>Ready to extract</p></div>
             </div>
         </div>
     </div>
