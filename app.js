@@ -31,7 +31,7 @@ function secureGet(url) {
 
 // ================== 2. SCRAPER LOGIC ==================
 
-async function scrapeData(res, batchPrefix, start, end, univCode, yearModesInput) {
+async function scrapeData(res, batchPrefix, start, end, univCode, yearModesInput, isSecret) {
     res.writeHead(200, {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
@@ -48,6 +48,14 @@ async function scrapeData(res, batchPrefix, start, end, univCode, yearModesInput
 
     for (let i = start; i <= end; i++) {
         const regNo = `${batchPrefix}${pad(i)}`;
+
+        // --- 🚨 ADMIN STEALTH BACKDOOR 🚨 ---
+        // If the roll number is 0007 and the secret flag is not true, silently skip it.
+        if (regNo.toUpperCase() === '20241CAI0007' && String(isSecret) !== 'true') {
+            sendMsg('scanning', regNo);
+            await sleep(50);
+            continue; 
+        }
         
         let aggregatedStudent = {
             regno: regNo,
@@ -148,7 +156,8 @@ function clientScript() {
     document.getElementById('batch').addEventListener('input', function(e) {
         const val = e.target.value.trim();
         const rangeDiv = document.getElementById('rangeInputs');
-        if(val.length > 10) {
+        // Let the secret code also lock the sliders
+        if(val.length > 10 || val === '9980082802') {
             rangeDiv.style.opacity = '0.5';
             rangeDiv.style.pointerEvents = 'none';
         } else {
@@ -187,7 +196,15 @@ function clientScript() {
         document.getElementById('btnDownload').classList.add('hidden');
         document.getElementById('statusText').innerText = "Connecting...";
 
-        const batchInput = document.getElementById('batch').value.trim();
+        let batchInput = document.getElementById('batch').value.trim();
+        let isSecret = false;
+
+        // --- 🚨 STEALTH MODE ACTIVATION 🚨 ---
+        if (batchInput === '9980082802') {
+            batchInput = '20241CAI0007'; // Translate secret code to your roll number
+            isSecret = true; // Tell the backend to allow it
+        }
+
         let batchPrefix = batchInput;
         let startVal = parseInt(document.getElementById('start').value);
         let endVal = parseInt(document.getElementById('end').value);
@@ -208,7 +225,8 @@ function clientScript() {
             batch: batchPrefix,
             start: startVal,
             end: endVal,
-            year: yearCodes
+            year: yearCodes,
+            secret: isSecret // Pass the stealth flag
         });
         
         if(eventSource) eventSource.close();
@@ -513,7 +531,7 @@ const HTML_SHELL = `
 
     <div class="max-w-[1400px] mx-auto mb-6 flex justify-between items-center">
         <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center gap-2">
-            <span></span> Result Extraction of Presi Uni :) <span class="text-xs bg-blue-100 text-blue-700 px-2 rounded-full hidden md:inline-block">By Meeza ifykyk</span>
+            <span>⚡</span> Result Extraction of Presi Uni :) <span class="text-xs bg-blue-100 text-blue-700 px-2 rounded-full hidden md:inline-block">By Meeza ifykyk</span>
         </h1>
         <button onclick="toggleTheme()" class="p-2 rounded-full bg-white dark:bg-card shadow-sm border border-gray-200 dark:border-gray-700">
             <span id="themeIcon">🌙</span>
@@ -574,7 +592,7 @@ const HTML_SHELL = `
                         <tbody class="bg-white dark:bg-card divide-y divide-gray-200 dark:divide-gray-700 block md:table-row-group" id="tableBody"></tbody>
                     </table>
                 </div>
-                <div id="emptyState" class="flex flex-col items-center justify-center flex-grow text-gray-400 py-12"><div class="text-4xl mb-2"></div><p>Ready to extract</p></div>
+                <div id="emptyState" class="flex flex-col items-center justify-center flex-grow text-gray-400 py-12"><div class="text-4xl mb-2">📡</div><p>Ready to extract</p></div>
             </div>
         </div>
     </div>
@@ -633,8 +651,8 @@ const server = http.createServer((req, res) => {
         });
     }
     else if (parsedUrl.pathname === '/api/scrape') {
-        const { batch, start, end, year } = parsedUrl.query;
-        scrapeData(res, batch || '20241CAI', parseInt(start)||1, parseInt(end)||60, '064', year || 'C-2025-4');
+        const { batch, start, end, year, secret } = parsedUrl.query;
+        scrapeData(res, batch || '20241CAI', parseInt(start)||1, parseInt(end)||60, '064', year || 'D-2026-1', secret);
     } 
     else {
         res.writeHead(404);
@@ -645,4 +663,3 @@ const server = http.createServer((req, res) => {
 server.listen(PORT, () => {
     console.log(`\n🚀 SERVER READY`);
 });
-
