@@ -582,7 +582,7 @@ const HTML_SHELL = `
                             <button onclick="addYearInput()" class="text-xs text-blue-600 hover:text-blue-700 font-bold px-2 py-0.5 bg-blue-50 rounded hover:bg-blue-100 dark:bg-slate-800 dark:text-blue-400">[ + ] Add</button>
                         </div>
                         <div id="yearInputsContainer">
-                            <input type="text" value="C-2025-4" class="year-input w-full px-3 py-2 border rounded-lg text-sm bg-gray-50 dark:bg-slate-800 dark:border-gray-600 dark:text-gray-300" placeholder="e.g. C-2025-4">
+                            <input type="text" value="D-2026-1" class="year-input w-full px-3 py-2 border rounded-lg text-sm bg-gray-50 dark:bg-slate-800 dark:border-gray-600 dark:text-gray-300" placeholder="e.g. D-2026-1">
                         </div>
                     </div>
                     <div class="grid grid-cols-1 gap-2 pt-2">
