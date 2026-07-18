@@ -68,19 +68,34 @@ async function scrapeData(res, batchPrefix, start, end, univCode, yearModesInput
             const detUrl = `${BASE_URL}?db=pub&a=getDetailedResults&regno=${regNo}&univcode=${univCode}&yearmode=${yearMode}`;
             const detJson = await secureGet(detUrl);
 
-            if (!detJson || detJson.status !== 'success' || !detJson.data || !detJson.data.studdet) {
+            // Handle both old (detJson.data) and new wrapped (detJson.data.data) API structures
+            let detailedPayload = null;
+            if (detJson && detJson.status === 'success' && detJson.data) {
+                if (detJson.data.studdet) {
+                    detailedPayload = detJson.data; // Old structure
+                } else if (detJson.data.data && detJson.data.data.studdet) {
+                    detailedPayload = detJson.data.data; // New wrapped structure
+                }
+            }
+
+            // If we still couldn't find the student details, skip to the next
+            if (!detailedPayload) {
                 continue;
             }
 
             foundAny = true;
-            if (aggregatedStudent.name === "Unknown") aggregatedStudent.name = detJson.data.studdet.name;
+            if (aggregatedStudent.name === "Unknown") aggregatedStudent.name = detailedPayload.studdet.name;
 
             const briefUrl = `${BASE_URL}?db=pub&a=getBriefResults&regno=${regNo}&univcode=${univCode}&yearmode=${yearMode}`;
             const briefJson = await secureGet(briefUrl) || {};
 
-            const grades = detJson.data.resdata || [];
+            const grades = detailedPayload.resdata || [];
+            
+            // Your existing briefJson check actually handles the new structure perfectly already
             const marks = (briefJson.data && briefJson.data.data) ? briefJson.data.data : [];
-            const currentSgpa = detJson.data.row2 ? detJson.data.row2.replace(/<[^>]*>/g, '').replace('SGPA:', '').trim() : "N/A";
+            
+            const currentSgpa = detailedPayload.row2 ? detailedPayload.row2.replace(/<[^>]*>/g, '').replace('SGPA:', '').trim() : "N/A";
+
 
             aggregatedStudent.sgpa_history.push({ sem: yearMode, sgpa: currentSgpa });
 
